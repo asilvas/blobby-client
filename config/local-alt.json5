@@ -1,0 +1,20 @@
+{
+  storage: {
+    local: {
+      driver: 'blobby-fs',
+      options: {
+        path: './fs/local-alt1'
+      },
+      auth: 'test',
+      replicas: ['local2', 'local::local']
+    },
+    local2: {
+      driver: 'blobby-fs',
+      options: {
+        path: './fs/local2' // example of reading/writing to a remote as primary replica
+      },
+      auth: 'test',
+      replicas: ['local', 'local::local']
+    }
+  }
+}

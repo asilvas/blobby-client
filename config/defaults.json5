@@ -1,0 +1,21 @@
+{
+  http: {
+    default: {
+      port: 4080
+    }
+  },
+  staticFiles: {
+    textFiles: {
+      test: '^\\/(.*\\.txt)?$',
+      path: './test/'
+    }
+  },
+  auth: {
+    test: {
+      driver: 'blobby-auth-header',
+      options: {
+        apiKey: 'shhMySecret'
+      }
+    }
+  }
+}

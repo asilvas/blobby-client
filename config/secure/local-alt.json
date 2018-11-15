@@ -1,0 +1,11 @@
+{
+  "_": {
+    "privateKeyPath": "/Users/asilvas/blobby-client/config/secure/secret.txt"
+  },
+  "properties": {
+    "secret": {
+      "alg": "aes-256-ctr",
+      "value": "d700b03194ea5e341360a52369c2dcb3733557a53687fa69b21cd140"
+    }
+  }
+}

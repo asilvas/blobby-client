@@ -1,0 +1,45 @@
+{
+  "name": "blobby-client",
+  "version": "1.0.0",
+  "description": "Blobby is an HTTP Proxy for Blob storage systems (such as S3) that automatically",
+  "main": "./src",
+  "engines": {
+    "node": ">= 8.12"
+  },
+  "scripts": {
+    "config-local": "cshield config/secure/local.json config/secure/secret.txt",
+    "config-local-alt": "cshield config/secure/local-alt.json config/secure/secret.txt",
+    "cover": "nyc ava --verbose",
+    "prepublish": "npm run cover",
+    "test": "ava --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asilvas/blobby-client.git"
+  },
+  "keywords": [
+    "blobby"
+  ],
+  "author": "Aaron Silvas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/asilvas/blobby-client/issues"
+  },
+  "homepage": "https://github.com/asilvas/blobby-client#readme",
+  "files": [
+    "bin",
+    "src",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "devDependencies": {
+    "ava": "^1.0.0-rc.1",
+    "blobby-fs": "^0.2.1",
+    "nyc": "^13.1.0"
+  },
+  "dependencies": {
+    "config-shield": "^0.2.0",
+    "retry-fn": "^1.0.1"
+  }
+}
