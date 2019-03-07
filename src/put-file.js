@@ -72,10 +72,14 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
   });
 
   if (Array.isArray(storage.config.replicas) && storage.config.replicas.length > 0) {
-    const replicaTasks = storage.config.replicas.map(replica => writeToReplica(client, replica, sourceKey, fileKey, copyFile ? copyFile : file, opts));
-    if (waitForReplicas !== false) {
-      await Promise.all(replicaTasks);
-    } // else do not wait
+    try {
+      const replicaTasks = storage.config.replicas.map(replica => writeToReplica(client, replica, sourceKey, fileKey, copyFile ? copyFile : file, opts));
+      if (waitForReplicas !== false) {
+        await Promise.all(replicaTasks);
+      } // else do not wait
+    } catch (ex) {
+      throw ex;
+    }
   }
 
   // let the caller wait on promise
