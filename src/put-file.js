@@ -67,7 +67,10 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
     retry(op, client.config.retry, (err, headers) => {
       if (err) return void reject(err);
 
-      resolve(headers || file.headers || {});
+      const finalHeaders = headers || file.headers || {};
+      finalHeaders.ContentType = finalHeaders.ContentType || ContentType;
+
+      resolve(finalHeaders);
     });
   });
 
