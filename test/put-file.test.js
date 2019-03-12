@@ -14,8 +14,9 @@ test('PUT local/test/put1.txt', async t => {
   const client = new BlobbyClient(argv, config);
   const storage = client.getStorage('local');
   const randText = Math.random().toString();
-  const headers = await client.putFile(storage, 'test/put1.txt', { buffer: Buffer.from(randText) });
+  const headers = await client.putFile(storage, 'test/put1.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
   t.true(typeof headers === 'object');
+  t.not(headers.ETag, '123');
 
   const [nextHeaders, data] = await client.getFile(storage, 'test/put1.txt', { acl: 'public' });
   t.true(typeof nextHeaders === 'object');
@@ -37,8 +38,10 @@ test('COPY local/test/put2.txt put3.txt', async t => {
   const client = new BlobbyClient(argv, config);
   const storage = client.getStorage('local');
   const randText = Math.random().toString();
-  await client.putFile(storage, 'test/put2.txt', { buffer: Buffer.from(randText) });
-  await client.putFile(storage, 'test/put3.txt', {}, { headers: { 'x-amz-copy-source': 'local:test/put2.txt' } });
+  let headers = await client.putFile(storage, 'test/put2.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
+  t.not(headers.ETag, '123'); // will compute its own ETag
+  headers = await client.putFile(storage, 'test/put3.txt', {}, { headers: { 'x-amz-copy-source': 'local:test/put2.txt' } }, { headers: { etag: 'abc' } });
+  t.not(headers.ETag, 'abc'); // will compute its own ETag
 
   const [, data] = await client.getFile(storage, 'test/put3.txt', { acl: 'public' });
   t.true(Buffer.isBuffer(data));

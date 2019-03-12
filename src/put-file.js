@@ -67,7 +67,10 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
     retry(op, client.config.retry, (err, headers) => {
       if (err) return void reject(err);
 
-      const finalHeaders = headers || file.headers || {};
+      const finalHeaders = headers || (copyFile ? copyFile.headers : file.headers) || {};
+      if (!finalHeaders.ETag && ETag) {
+        finalHeaders.ETag = ETag; // not all clients provide ETag on write
+      }
       finalHeaders.ContentType = finalHeaders.ContentType || ContentType;
 
       resolve(finalHeaders);
