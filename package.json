@@ -1,6 +1,6 @@
 {
   "name": "blobby-client",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Blobby is an HTTP Proxy for Blob storage systems (such as S3) that automatically",
   "main": "./src",
   "engines": {
@@ -39,6 +39,7 @@
     "nyc": "^13.1.0"
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "config-shield": "^0.2.0",
     "json5": "^2.1.0",
     "retry-fn": "^1.0.1"

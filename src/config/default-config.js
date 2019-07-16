@@ -10,5 +10,9 @@ module.exports = {
     'access-control-allow-methods': 'GET',
     'access-control-allow-origin': '*',
     'access-control-max-age': '86400'
+  },
+  log: {
+    warnings: true,
+    errors: true
   }
 };

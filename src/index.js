@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+const chalk = require('chalk');
 const getConfigById = require('./config/get-config-by-id');
 const getConfigs = require('./config/get-configs');
 const getStorage = require('./storage');
@@ -5,10 +7,28 @@ const putFile = require('./put-file');
 const deleteFile = require('./delete-file');
 const deleteFiles = require('./delete-files');
 
-module.exports = class BlobbyClient {
+module.exports = class BlobbyClient extends EventEmitter {
   constructor(argv, globalConfig) {
+    super();
+
     this.argv = argv;
     this.config = globalConfig;
+
+    const log = this.config.log;
+    if (log.warnings) {
+      this.on('warn', msg => {
+        const o = typeof msg === 'object' ? msg : { message: msg };
+        o.level = 'warn';
+        console.warn(chalk.yellow(JSON.stringify(o)));
+      });
+    }
+    if (log.errors) {
+      this.on('error', msg => {
+        const o = typeof msg === 'object' ? msg : { message: msg };
+        o.level = 'error';
+        console.error(chalk.red(JSON.stringify(o)));
+      });
+    }
   }
 
   static getConfigs(argv) {
