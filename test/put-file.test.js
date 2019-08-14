@@ -50,3 +50,22 @@ test('COPY local/test/put2.txt put3.txt', async t => {
   await client.deleteFile(storage, 'test/put2.txt');
   await client.deleteFile(storage, 'test/put3.txt');
 });
+
+test('COPY local/test/测试2.txt 测试3.txt', async t => {
+  const config = await getConfig();
+  const client = new BlobbyClient(argv, config);
+  const storage = client.getStorage('local');
+  const randText = Math.random().toString();
+  let headers = await client.putFile(storage, 'test/测试2.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
+  t.not(headers.ETag, '123'); // will compute its own ETag
+  headers = await client.putFile(storage, 'test/测试3.txt', {}, { headers: { 'x-amz-copy-source': `local:test/${encodeURIComponent('测试2')}.txt` } }, { headers: { etag: 'abc' } });
+  t.not(headers.ETag, 'abc'); // will compute its own ETag
+
+  const [, data] = await client.getFile(storage, 'test/测试3.txt', { acl: 'public' });
+  t.true(Buffer.isBuffer(data));
+  t.is(data.toString(), randText);
+
+  await client.deleteFile(storage, 'test/测试2.txt');
+  await client.deleteFile(storage, 'test/测试3.txt');
+});
+

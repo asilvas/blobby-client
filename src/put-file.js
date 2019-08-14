@@ -39,12 +39,19 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
       copyFile = { headers: fileInfo };
     } else {
       copyFile = await new Promise((resolve, reject) => {
-        storage.fetch(sourceKey, { acl: 'private' }, (err, headers, buffer) => {
+        let decodedSourceKey;
+        try {
+          decodedSourceKey = sourceKey.split( '/').map(decodeURIComponent).join('/');
+        } catch (ex /* ignore */) {
+          decodedSourceKey = sourceKey;
+        }
+        storage.fetch(decodedSourceKey, { acl: 'private' }, (err, headers, buffer) => {
+
           if (err) {
             err.statusCode = 404;
             return void reject(err);
           }
-    
+
           headers.bucket = SourceBucket;
 
           resolve({ headers, buffer });
@@ -116,7 +123,7 @@ async function writeToReplica(client, replica, sourceKey, destinationKey, file, 
     : storage.store.bind(storage, destinationKey, file, {})
   ;
 
-  return new Promise((resolve, reject) => {    
+  return new Promise((resolve, reject) => {
     retry(op, config.retry, (err, headers) => {
       if (err) return void reject(err);
 

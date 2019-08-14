@@ -41,6 +41,7 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "config-shield": "^0.2.0",
+    "extend": "^3.0.2",
     "json5": "^2.1.0",
     "retry-fn": "^1.0.1"
   }
