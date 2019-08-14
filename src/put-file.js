@@ -41,8 +41,8 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
       copyFile = await new Promise((resolve, reject) => {
         let decodedSourceKey;
         try {
-          decodedSourceKey = sourceKey.split('/').map(decodeURIComponent).join('/');
-        } catch {
+          decodedSourceKey = sourceKey.split( '/').map(decodeURIComponent).join('/');
+        } catch (ex /* ignore */) {
           decodedSourceKey = sourceKey;
         }
         storage.fetch(decodedSourceKey, { acl: 'private' }, (err, headers, buffer) => {
