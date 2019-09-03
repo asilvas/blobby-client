@@ -65,10 +65,8 @@ module.exports = class BlobbyClient extends EventEmitter {
         }
         storage.fetch(encodedFileKey, opts, (err1, headers1, data1) => {
           if (err1) return void reject(err1);
-          putFile($client, storage, fileKey, { headers: headers1, buffer: data1 }, { } )
-            .finally(() => {
-              resolve([headers1, data1]);
-            });
+          resolve([headers1, data1]);
+          putFile($client, storage, fileKey, { headers: headers1, buffer: data1 }, { contentType: headers1.ContentType } );
         });
       });
     });

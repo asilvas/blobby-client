@@ -48,7 +48,6 @@ test('GET local/test/a+b.txt returns error if status code is not 403 or 404', as
 });
 
 test('GET local/test/a+b.txt auto retries a%2Bb.txt', async t => {
-  console.log('t.spy', t.spy);
   const randText = Math.random().toString();
   const config = await getConfig();
   const client = new BlobbyClient(argv, config);
@@ -58,12 +57,11 @@ test('GET local/test/a+b.txt auto retries a%2Bb.txt', async t => {
     .onFirstCall().yields({ statusCode: 403 })
     .onSecondCall().yields(null, { etag: '123' }, Buffer.from(randText));
   await client.putFile(storage, 'test/a%2Bb.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
-  await client.getFile(storage, 'test/a+b.txt', { acl: 'public' });
-
-  fetchStub.restore();
   const [, data] = await client.getFile(storage, 'test/a+b.txt', { acl: 'public' });
   t.true(Buffer.isBuffer(data));
   t.is(data.toString(), randText);
+
+  fetchStub.restore();
 
   await client.deleteFile(storage, 'test/a+b.txt');
   await client.deleteFile(storage, 'test/a%2Bb.txt');
