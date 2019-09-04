@@ -59,7 +59,7 @@ module.exports = class BlobbyClient extends EventEmitter {
       storage.fetch(fileKey, opts, (err, headers, data) => {
         if (!err) return void resolve([headers, data]);
         const { statusCode } = err;
-        const encodedFileKey = fileKey.split('/').map(encodeURIComponent).join('/');
+        const encodedFileKey = decodeURI(fileKey.split('/').map(encodeURIComponent).join('/'));
         if (encodedFileKey === fileKey || ![403, 404].includes(statusCode)) {
           return void reject(err);
         }
