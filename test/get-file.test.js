@@ -58,6 +58,8 @@ test('GET local/test/a+b.txt auto retries a%2Bb.txt', async t => {
     .onSecondCall().yields(null, { etag: '123' }, Buffer.from(randText));
   await client.putFile(storage, 'test/a%2Bb.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
   const [, data] = await client.getFile(storage, 'test/a+b.txt', { acl: 'public' });
+  t.is(fetchStub.args[0][0], 'test/a+b.txt');
+  t.is(fetchStub.args[1][0], 'test/a%2Bb.txt');
   t.true(Buffer.isBuffer(data));
   t.is(data.toString(), randText);
 
@@ -65,4 +67,27 @@ test('GET local/test/a+b.txt auto retries a%2Bb.txt', async t => {
 
   await client.deleteFile(storage, 'test/a+b.txt');
   await client.deleteFile(storage, 'test/a%2Bb.txt');
+});
+
+test('GET local/test/a b, c d.txt auto retries test/a b%2C c d.txt', async t => {
+  const randText = Math.random().toString();
+  const config = await getConfig();
+  const client = new BlobbyClient(argv, config);
+  const storage = client.getStorage('local');
+  const fetchStub = sinon.stub(storage, "fetch");
+  fetchStub
+    .onFirstCall().yields({ statusCode: 403 })
+    .onSecondCall().yields(null, { etag: '123' }, Buffer.from(randText));
+  await client.putFile(storage, 'test/a b%2C c d.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
+  const [, data] = await client.getFile(storage, 'test/a b, c d.txt', { acl: 'public' });
+  t.is(fetchStub.args[0][0], 'test/a b, c d.txt');
+  t.is(fetchStub.args[1][0], 'test/a b%2C c d.txt');
+
+  t.true(Buffer.isBuffer(data));
+  t.is(data.toString(), randText);
+
+  fetchStub.restore();
+
+  await client.deleteFile(storage, 'test/a b, c d.txt');
+  await client.deleteFile(storage, 'test/a b%2C c d.txt');
 });
