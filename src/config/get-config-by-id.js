@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const json5 = require('json5');
 const extend = require('extend');
+const lodashSet = require('lodash.set');
 const defaultConfig = require('./default-config');
 
 const gConfigs = {};
@@ -29,7 +30,7 @@ module.exports = async (configName, argv) => {
       const config = {};
       // extend secure config into base config
       secureConfig.getKeys().forEach(k => {
-        config[k] = secureConfig.getProp(k);
+        lodashSet(config, k, secureConfig.getProp(k));
       });
 
       resolve(config);

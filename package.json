@@ -34,16 +34,17 @@
     "package.json"
   ],
   "devDependencies": {
-    "ava": "^1.0.0-rc.1",
-    "blobby-fs": "^0.2.1",
-    "nyc": "^13.1.0",
-    "sinon": "^7.4.2"
+    "ava": "^3.8.2",
+    "blobby-fs": "^0.2.2",
+    "nyc": "^15.0.1",
+    "sinon": "^9.0.2"
   },
   "dependencies": {
-    "chalk": "^2.4.2",
+    "chalk": "^4.0.0",
     "config-shield": "^0.2.0",
     "extend": "^3.0.2",
-    "json5": "^2.1.0",
+    "json5": "^2.1.3",
+    "lodash.set": "^4.3.2",
     "retry-fn": "^1.0.1"
   }
 }
