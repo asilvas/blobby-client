@@ -56,7 +56,7 @@ function loadConfig(configDir, configName, argv) {
   if (gConfig) return gConfig; // return global object if already avail  
   let absPath = path.join(configDir, configName);
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if (!ext) {
       // auto-detect
       for (var i = 0; i < argv.configExts.length; i++) {
@@ -77,9 +77,9 @@ function loadConfig(configDir, configName, argv) {
   
     if (!/\.json5?/.test(ext)) {
       // perform require on commonJS
-  
+
       try {
-        o = require(absPath);
+        o = await require(absPath);
         o.id = configId;
         gConfigs[absPath] = o; // store in global object
         return void resolve(o);
@@ -89,7 +89,6 @@ function loadConfig(configDir, configName, argv) {
     }
   
     // for json/json5 files, utilize json5 loader
-  
     fs.readFile(absPath, 'utf8', (err, data) => {
       if (err) return void reject(err);
   

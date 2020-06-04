@@ -43,3 +43,11 @@ test('get test2.js config', async t => {
   const local = await client.getConfig('test2');
   t.true(local && local.id === 'test2');
 });
+
+test('get async config-promise.js config', async t => {
+  const config = await getConfig();
+  const client = new BlobbyClient(argv, config);
+  const local = await client.getConfig('config-promise');
+  t.true(local && local.id === 'config-promise');
+  t.true(local.promise);
+});
