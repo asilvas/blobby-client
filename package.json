@@ -34,13 +34,13 @@
     "package.json"
   ],
   "devDependencies": {
-    "ava": "^3.8.2",
+    "ava": "^4.0.1",
     "blobby-fs": "^0.2.2",
     "nyc": "^15.0.1",
-    "sinon": "^9.0.2"
+    "sinon": "^13.0.1"
   },
   "dependencies": {
-    "chalk": "^4.0.0",
+    "chalk": "^4.1.2",
     "config-shield": "^0.2.0",
     "extend": "^3.0.2",
     "json5": "^2.1.3",
