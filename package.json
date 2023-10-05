@@ -10,7 +10,6 @@
     "config-local": "cshield config/secure/local.json config/secure/secret.txt",
     "config-local-alt": "cshield config/secure/local-alt.json config/secure/secret.txt",
     "cover": "nyc ava --verbose",
-    "prepublish": "npm run cover",
     "test": "ava --verbose"
   },
   "repository": {
