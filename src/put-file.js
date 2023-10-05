@@ -1,7 +1,7 @@
 const retry = require('./retry');
 
 module.exports = async (client, storage, fileKey, file, opts = {}) => {
-  const { waitForReplicas, headers = {}, contentType='application/octet-stream' } = opts;
+  const { waitForReplicas, headers = {}, contentType = 'application/octet-stream' } = opts;
   if (!file.headers) file.headers = {};
 
   // use request content-type if known, otherwise try to auto-detect
@@ -21,7 +21,7 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
   const isCopySupported = CopySource
     && typeof storage.copy === 'function'
     && (!storage.config.replicas || storage.config.replicas.reduce((state, r) => !state ? false : typeof storage.copy === 'function', true))
-  ; // all-or-nothing native copy support
+    ; // all-or-nothing native copy support
   const CustomHeaders = {};
   Object.keys(headers).forEach(k => {
     const xHeader = /^x\-(.*)$/.exec(k);
@@ -38,25 +38,21 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
     if (isCopySupported) { // native copy support comes later
       copyFile = { headers: fileInfo };
     } else {
-      copyFile = await new Promise((resolve, reject) => {
-        let decodedSourceKey;
-        try {
-          decodedSourceKey = sourceKey.split( '/').map(decodeURIComponent).join('/');
-        } catch (ex /* ignore */) {
-          decodedSourceKey = sourceKey;
-        }
-        storage.fetch(decodedSourceKey, { acl: 'private' }, (err, headers, buffer) => {
+      let decodedSourceKey;
+      try {
+        decodedSourceKey = sourceKey.split('/').map(decodeURIComponent).join('/');
+      } catch (ex /* ignore */) {
+        decodedSourceKey = sourceKey;
+      }
 
-          if (err) {
-            err.statusCode = 404;
-            return void reject(err);
-          }
-
-          headers.bucket = SourceBucket;
-
-          resolve({ headers, buffer });
-        });
+      const [headers, buffer] = await storage.fetch(decodedSourceKey, { acl: 'private' }).catch(err => {
+        err.statusCode = 404;
+        throw err;
       });
+
+      headers.bucket = SourceBucket;
+
+      copyFile = { headers, buffer };
     }
   } else if (!Buffer.isBuffer(file.buffer)) {
     throw new Error('Cannot write file without `buffer`');
@@ -67,21 +63,17 @@ module.exports = async (client, storage, fileKey, file, opts = {}) => {
   let op = sourceKey && storage.copy
     ? storage.copy.bind(storage, sourceKey, fileKey, copyFile.headers)
     : storage.store.bind(storage, fileKey, copyFile ? copyFile : file, {})
-  ;
+    ;
 
   // always initiate write to master first
-  const writeMasterPromise = new Promise((resolve, reject) => {
-    retry(op, client.config.retry, (err, headers) => {
-      if (err) return void reject(err);
+  const writeMasterPromise = retry(op, client.config.retry).then(headers => {
+    const finalHeaders = headers || (copyFile ? copyFile.headers : file.headers) || {};
+    if (!finalHeaders.ETag && ETag) {
+      finalHeaders.ETag = ETag; // not all clients provide ETag on write
+    }
+    finalHeaders.ContentType = finalHeaders.ContentType || ContentType;
 
-      const finalHeaders = headers || (copyFile ? copyFile.headers : file.headers) || {};
-      if (!finalHeaders.ETag && ETag) {
-        finalHeaders.ETag = ETag; // not all clients provide ETag on write
-      }
-      finalHeaders.ContentType = finalHeaders.ContentType || ContentType;
-
-      resolve(finalHeaders);
-    });
+    return finalHeaders;
   });
 
   if (Array.isArray(storage.config.replicas) && storage.config.replicas.length > 0) {
@@ -121,13 +113,7 @@ async function writeToReplica(client, replica, sourceKey, destinationKey, file, 
   const op = sourceKey && storage.copy // use copy if requested and supported
     ? storage.copy.bind(storage, sourceKey, destinationKey, file.headers)
     : storage.store.bind(storage, destinationKey, file, {})
-  ;
+    ;
 
-  return new Promise((resolve, reject) => {
-    retry(op, config.retry, (err, headers) => {
-      if (err) return void reject(err);
-
-      resolve(headers);
-    })
-  });
+  return retry(op, config.retry);
 }

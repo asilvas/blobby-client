@@ -44,43 +44,30 @@ module.exports = class BlobbyClient extends EventEmitter {
   }
 
   headFile(storage, fileKey, opts) {
-    return new Promise((resolve, reject) => {
-      storage.fetchInfo(fileKey, opts, (err, headers) => {
-        if (err) return void reject(err);
-
-        resolve(headers);
-      });
-    });
+    return storage.fetchInfo(fileKey, opts);
   }
 
-  getFile(storage, fileKey, opts) {
+  async getFile(storage, fileKey, opts) {
     const $client = this;
-    return new Promise((resolve, reject) => {
-      storage.fetch(fileKey, opts, (err, headers, data) => {
-        if (!err) return void resolve([headers, data]);
-        const { statusCode } = err;
-        const encodedFileKey = decodeURI(fileKey.split('/').map(encodeURIComponent).join('/'));
-        if (encodedFileKey === fileKey || ![403, 404].includes(statusCode)) {
-          return void reject(err);
-        }
-        storage.fetch(encodedFileKey, opts, (err1, headers1, data1) => {
-          if (err1) return void reject(err1);
-          resolve([headers1, data1]);
-          putFile($client, storage, fileKey, { headers: headers1, buffer: data1 }, { contentType: headers1.ContentType })
-            .catch(() => null);
-        });
+
+    return storage.fetch(fileKey, opts).catch(err => {
+      console.log('err', err)
+      const { statusCode } = err;
+      const encodedFileKey = decodeURI(fileKey.split('/').map(encodeURIComponent).join('/'));
+      if (encodedFileKey === fileKey || ![403, 404].includes(statusCode)) {
+        throw err;
+      }
+      return storage.fetch(encodedFileKey, opts).then(([headers1, data1]) => {
+        // fire-and-forget (non-blocking)
+        putFile($client, storage, fileKey, { headers: headers1, buffer: data1 }, { contentType: headers1.ContentType })
+          .catch(() => null);
+        return [headers1, data1];
       });
     });
   }
 
   getFiles(storage, dirPath, opts) {
-    return new Promise((resolve, reject) => {
-      storage.list(dirPath, opts, (err, files, dirs, lastKey) => {
-        if (err) return void reject(err);
-
-        resolve([files, dirs, lastKey]);
-      });
-    });
+    return storage.list(dirPath, opts);
   }
 
   putFile(storage, fileKey, file, opts) {

@@ -1,16 +1,9 @@
-const retryFn = require('retry-fn');
+const retryFn = require('promise-fn-retry');
 
-function getTimeoutFn(min, factor) {
-  return attempt => Math.max(min, (attempt-1) * factor * min);
-}
+function getRetryFn(fn, options = {}) {
+  const { initialDelayTime = 1000, times = 3 } = options;
 
-function getRetryFn(fn, options, cb) {
-  const { min=1000, factor=2, retries=3 } = options;
-  const timeout = getTimeoutFn(min, factor);
-
-  const retry = retryFn.bind(null, { retries, timeout });
-
-  retry(fn, cb);
+  return retryFn(fn, { initialDelayTime, times });
 }
 
 module.exports = getRetryFn;

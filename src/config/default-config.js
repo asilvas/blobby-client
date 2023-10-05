@@ -1,8 +1,7 @@
 module.exports = {
   retry: {
-    min: 500,
-    factor: 2,
-    retries: 3
+    initialDelayTime: 500,
+    times: 3
   },
   cors: {
     'access-control-allow-credentials': 'true',

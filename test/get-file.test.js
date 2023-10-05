@@ -24,9 +24,9 @@ test('GET local/test/ab.txt returns error on non-existent file', async t => {
   const client = new BlobbyClient(argv, config);
   const storage = client.getStorage('local');
   const fetchStub = sinon.stub(storage, "fetch");
-  fetchStub.yields(new Error('an error'));
+  fetchStub.rejects(new Error('an error'));
   await client.getFile(storage, 'test/ab.txt', { acl: 'public' })
-    .catch( err => {
+    .catch(err => {
       t.is(err.message, 'an error');
       t.true(fetchStub.calledOnce);
     });
@@ -38,9 +38,9 @@ test('GET local/test/a+b.txt returns error if status code is not 403 or 404', as
   const client = new BlobbyClient(argv, config);
   const storage = client.getStorage('local');
   const fetchStub = sinon.stub(storage, "fetch");
-  fetchStub.yields(new Error('an error'));
+  fetchStub.rejects(new Error('an error'));
   await client.getFile(storage, 'test/a+b.txt', { acl: 'public' })
-    .catch( err => {
+    .catch(err => {
       t.is(err.message, 'an error');
       t.true(fetchStub.calledOnce);
     });
@@ -54,8 +54,8 @@ test('GET local/test/a+b.txt auto retries a%2Bb.txt', async t => {
   const storage = client.getStorage('local');
   const fetchStub = sinon.stub(storage, "fetch");
   fetchStub
-    .onFirstCall().yields({ statusCode: 403 })
-    .onSecondCall().yields(null, { etag: '123' }, Buffer.from(randText));
+    .onFirstCall().rejects({ statusCode: 403 })
+    .onSecondCall().resolves([{ etag: '123' }, Buffer.from(randText)]);
   await client.putFile(storage, 'test/a%2Bb.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
   const [, data] = await client.getFile(storage, 'test/a+b.txt', { acl: 'public' });
   t.is(fetchStub.args[0][0], 'test/a+b.txt');
@@ -74,10 +74,10 @@ test('GET local/test/a b, c d.txt auto retries test/a b%2C c d.txt', async t => 
   const config = await getConfig();
   const client = new BlobbyClient(argv, config);
   const storage = client.getStorage('local');
-  const fetchStub = sinon.stub(storage, "fetch");
+  const fetchStub = sinon.stub(storage, 'fetch');
   fetchStub
-    .onFirstCall().yields({ statusCode: 403 })
-    .onSecondCall().yields(null, { etag: '123' }, Buffer.from(randText));
+    .onFirstCall().rejects({ statusCode: 403 })
+    .onSecondCall().resolves([{ etag: '123' }, Buffer.from(randText)]);
   await client.putFile(storage, 'test/a b%2C c d.txt', { buffer: Buffer.from(randText) }, { headers: { etag: '123' } });
   const [, data] = await client.getFile(storage, 'test/a b, c d.txt', { acl: 'public' });
   t.is(fetchStub.args[0][0], 'test/a b, c d.txt');
